@@ -7,7 +7,7 @@
  */
 
 // Connect the server with a WebSocket connection
-const userId = "demo-user";
+const userId = "manuel";
 const sessionId = "demo-session-" + Math.random().toString(36).substring(7);
 let websocket = null;
 let is_audio = false;
@@ -35,6 +35,7 @@ enableAffectiveDialogCheckbox.addEventListener("change", handleRunConfigChange);
 
 // Build WebSocket URL with RunConfig options as query parameters
 function getWebSocketUrl() {
+  //const baseUrl = "ws://" + window.location.host + "/ws/" + userId + "/" + sessionId;
   const baseUrl = "ws://localhost:8000/ws/" + userId + "/" + sessionId;
   const params = new URLSearchParams();
 
@@ -321,7 +322,7 @@ function connectWebsocket() {
   websocket.onopen = function () {
     console.log("WebSocket connection opened.");
     updateConnectionStatus(true);
-    addSystemMessage("Connected to ADK streaming server");
+    addSystemMessage("Connected to MAK streaming server");
 
     // Log to console
     addConsoleEntry('incoming', 'WebSocket Connected', {
@@ -705,7 +706,7 @@ function connectWebsocket() {
       console.log("Reconnecting...");
 
       // Log reconnection attempt to console
-      addConsoleEntry('outgoing', 'Reconnecting to ADK server...', {
+      addConsoleEntry('outgoing', 'Reconnecting to MAK server...', {
         userId: userId,
         sessionId: sessionId
       }, '🔄', 'system');
@@ -789,13 +790,15 @@ function base64ToArray(base64) {
  */
 
 const cameraButton = document.getElementById("cameraButton");
-const cameraModal = document.getElementById("cameraModal");
+const cameraPanel = document.getElementById("cameraPanel");
 const cameraPreview = document.getElementById("cameraPreview");
-const closeCameraModal = document.getElementById("closeCameraModal");
-const cancelCamera = document.getElementById("cancelCamera");
+const closeCameraPanel = document.getElementById("closeCameraPanel");
 const captureImageBtn = document.getElementById("captureImage");
 
 let cameraStream = null;
+let isStreamingVideo = false;
+let videoStreamIntervalId = null;
+const streamVideoBtn = document.getElementById("streamVideo");
 
 // Open camera modal and start preview
 async function openCameraPreview() {
@@ -812,8 +815,9 @@ async function openCameraPreview() {
     // Set the stream to the video element
     cameraPreview.srcObject = cameraStream;
 
-    // Show the modal
-    cameraModal.classList.add('show');
+    // Show the panel
+    cameraPanel.classList.add('show');
+    scrollToBottom();
 
   } catch (error) {
     console.error('Error accessing camera:', error);
@@ -831,6 +835,7 @@ async function openCameraPreview() {
 function closeCameraPreview() {
   // Stop the camera stream
   if (cameraStream) {
+    stopVideoStreaming(); // Stop streaming if active
     cameraStream.getTracks().forEach(track => track.stop());
     cameraStream = null;
   }
@@ -838,8 +843,8 @@ function closeCameraPreview() {
   // Clear the video source
   cameraPreview.srcObject = null;
 
-  // Hide the modal
-  cameraModal.classList.remove('show');
+  // Hide the panel
+  cameraPanel.classList.remove('show');
 }
 
 // Capture image from the live preview
@@ -913,18 +918,91 @@ function sendImage(base64Image) {
   }
 }
 
+// Toggle video streaming
+function toggleVideoStreaming() {
+  if (isStreamingVideo) {
+    stopVideoStreaming();
+  } else {
+    startVideoStreaming();
+  }
+}
+
+// Start video streaming
+function startVideoStreaming() {
+  if (!cameraStream) return;
+
+  isStreamingVideo = true;
+  streamVideoBtn.textContent = "🛑 Stop Video Stream";
+  streamVideoBtn.classList.add("btn-danger");
+
+  addSystemMessage("Video streaming started (1 frame/sec)");
+  addConsoleEntry('outgoing', 'Video Streaming Started', { fps: 1 }, '🎥', 'user');
+
+  // Initial frame
+  sendVideoFrame();
+
+  // Set interval for subsequent frames (1 frame per second to avoid overloading)
+  videoStreamIntervalId = setInterval(sendVideoFrame, 1000);
+}
+
+// Stop video streaming
+function stopVideoStreaming() {
+  if (!isStreamingVideo) return;
+
+  isStreamingVideo = false;
+  if (videoStreamIntervalId) {
+    clearInterval(videoStreamIntervalId);
+    videoStreamIntervalId = null;
+  }
+
+  streamVideoBtn.textContent = "🎥 Start Video Stream";
+  streamVideoBtn.classList.remove("btn-danger");
+
+  addSystemMessage("Video streaming stopped");
+  addConsoleEntry('outgoing', 'Video Streaming Stopped', null, '🛑', 'user');
+}
+
+// Capture and send a single video frame
+function sendVideoFrame() {
+  if (!cameraStream || !websocket || websocket.readyState !== WebSocket.OPEN) return;
+
+  try {
+    const canvas = document.createElement('canvas');
+    // Scale down for streaming to save bandwidth
+    const scale = 0.5;
+    canvas.width = cameraPreview.videoWidth * scale;
+    canvas.height = cameraPreview.videoHeight * scale;
+    const context = canvas.getContext('2d');
+    context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+
+    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+    const base64data = imageDataUrl.split(',')[1];
+
+    const jsonMessage = JSON.stringify({
+      type: "image",
+      data: base64data,
+      mimeType: "image/jpeg"
+    });
+    websocket.send(jsonMessage);
+
+    // Log occasionally or with a specific tag to avoid console bloat
+    if (showAudioEventsCheckbox.checked) {
+      addConsoleEntry('outgoing', 'Video Frame Sent', { size: base64data.length }, '🖼️', 'user', true);
+    }
+  } catch (error) {
+    console.error('Error sending video frame:', error);
+    stopVideoStreaming();
+  }
+}
+
 // Event listeners
 cameraButton.addEventListener("click", openCameraPreview);
-closeCameraModal.addEventListener("click", closeCameraPreview);
-cancelCamera.addEventListener("click", closeCameraPreview);
+closeCameraPanel.addEventListener("click", closeCameraPreview);
 captureImageBtn.addEventListener("click", captureImageFromPreview);
+streamVideoBtn.addEventListener("click", toggleVideoStreaming);
 
-// Close modal when clicking outside of it
-cameraModal.addEventListener("click", (event) => {
-  if (event.target === cameraModal) {
-    closeCameraPreview();
-  }
-});
+// Close panel when clicking outside of it (if it were a modal, but and panel its less likely, but we keep it for now or remove)
+// For a panel inside container, clicking outside is not as obvious, so we'll just use the close button.
 
 /**
  * Audio handling

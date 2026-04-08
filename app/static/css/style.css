@@ -108,9 +108,12 @@ h1 {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -177,6 +180,7 @@ h1 {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -258,13 +262,18 @@ h1 {
 }
 
 @keyframes ellipsis {
-  0%, 20% {
+
+  0%,
+  20% {
     content: '.';
   }
+
   40% {
     content: '..';
   }
-  60%, 100% {
+
+  60%,
+  100% {
     content: '...';
   }
 }
@@ -608,7 +617,8 @@ button {
   word-break: break-word;
   font-size: 0.7rem;
   line-height: 1.4;
-  padding-left: 2.5rem; /* Indent to align with header after emoji and icon */
+  padding-left: 2.5rem;
+  /* Indent to align with header after emoji and icon */
 }
 
 .console-entry-content:empty {
@@ -771,73 +781,91 @@ button {
   }
 }
 
-/* Camera Preview Modal */
-.modal {
+/* Camera Panel */
+.camera-panel {
   display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-}
-
-.modal.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  max-width: 90%;
-  max-height: 90%;
-  width: 640px;
-  display: flex;
   flex-direction: column;
-  animation: modalSlideIn 0.3s ease-out;
+  background-color: white;
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  animation: panelSlideUp 0.3s ease-out;
+  max-height: 400px;
 }
 
-@keyframes modalSlideIn {
+.camera-panel.show {
+  display: flex;
+}
+
+@keyframes panelSlideUp {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.modal-header {
+.camera-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #f8f9fa;
   border-bottom: 1px solid var(--border-color);
 }
 
-.modal-header h3 {
+.camera-panel-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #202124;
+}
+
+.camera-panel-content {
+  display: flex;
+  padding: 1rem 1.5rem;
+  gap: 1.5rem;
+  align-items: center;
+  overflow: hidden;
+}
+
+.camera-preview-container {
+  flex: 0 0 240px;
+  height: 180px;
+  background-color: #000;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#cameraPreview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.camera-panel-controls {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   line-height: 1;
   color: #5f6368;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -846,48 +874,22 @@ button {
 }
 
 .close-btn:hover {
-  background-color: #f1f3f4;
+  background-color: #dadce0;
   color: #202124;
-}
-
-.modal-body {
-  padding: 1.5rem;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #000;
-  border-radius: 0 0 1rem 1rem;
-}
-
-#cameraPreview {
-  width: 100%;
-  max-height: 480px;
-  border-radius: 0.5rem;
-  object-fit: contain;
-}
-
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  background-color: white;
-  border-radius: 0 0 1rem 1rem;
 }
 
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
-  padding: 0.875rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 1.5rem;
-  font-size: 0.9375rem;
+  border-radius: 1.25rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -896,13 +898,21 @@ button {
   transform: translateY(-1px);
 }
 
+.btn-primary.btn-danger {
+  background-color: #ea4335;
+}
+
+.btn-primary.btn-danger:hover {
+  background-color: #d33426;
+}
+
 .btn-secondary {
   background-color: white;
   color: #5f6368;
-  padding: 0.875rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border: 1px solid var(--border-color);
-  border-radius: 1.5rem;
-  font-size: 0.9375rem;
+  border-radius: 1.25rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
