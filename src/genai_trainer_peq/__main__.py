@@ -21,7 +21,7 @@ load_dotenv(Path(__file__).parent / ".env")
 
 # Import agent after loading environment variables
 # pylint: disable=wrong-import-position
-from google_search_agent.agent import agent  # noqa: E402
+from genai_trainer_peq.google_search_agent.agent import agent  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -251,3 +251,14 @@ async def websocket_endpoint(
         # Always close the queue, even if exceptions occurred
         logger.debug("Closing live_request_queue")
         live_request_queue.close()
+
+
+def run():
+    """Run the FastAPI application."""
+    import uvicorn
+
+    uvicorn.run("genai_trainer_peq.__main__:app", host="0.0.0.0", port=8000, reload=True)
+
+
+if __name__ == "__main__":
+    run()

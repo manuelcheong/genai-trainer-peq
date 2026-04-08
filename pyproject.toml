@@ -1,5 +1,5 @@
 [project]
-name = "trainer-peq"
+name = "genai-trainer-peq"
 version = "0.1.0"
 description = "ADK Trainer PEQ demo application"
 readme = "README.md"
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-app = "app.main:app"
+genai-trainer-peq = "genai_trainer_peq.__main__:run"
 
 [project.optional-dependencies]
 dev = [
@@ -30,8 +30,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["src/genai_trainer_peq"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"app/static" = "share/bidi-demo/static"
-"app/.env" = "share/bidi-demo/.env.template"
+"src/genai_trainer_peq/static" = "share/genai_trainer_peq/static"
+"src/genai_trainer_peq/.env" = "share/genai_trainer_peq/.env.template"
