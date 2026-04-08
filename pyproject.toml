@@ -1,7 +1,7 @@
 [project]
 name = "genai-trainer-peq"
 version = "0.1.0"
-description = "ADK Trainer PEQ demo application"
+description = "Trainer PEQ demo application"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -10,10 +10,11 @@ authors = [
 ]
 
 dependencies = [
-    "google-adk>=1.20.0",
-    "fastapi>=0.115.0",
+    "fastapi>=0.128.0",
     "python-dotenv>=1.0.0",
     "uvicorn[standard]>=0.32.0",
+    "pydantic-settings>=2.13.1",
+    "google-adk>=1.28.1",
 ]
 
 [project.scripts]

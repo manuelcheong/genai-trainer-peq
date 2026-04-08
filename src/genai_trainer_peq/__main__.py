@@ -16,6 +16,10 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
+from genai_trainer_peq.config.settings import get_settings
+
+settings = get_settings()
+
 # Load environment variables from .env file BEFORE importing agent
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -25,7 +29,7 @@ from genai_trainer_peq.google_search_agent.agent import agent  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=settings.log_level,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
@@ -34,7 +38,7 @@ logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 # Application name constant
-APP_NAME = "bidi-demo"
+APP_NAME = "genai-trainer-peq"
 
 # ========================================
 # Phase 1: Application Initialization (once at startup)
